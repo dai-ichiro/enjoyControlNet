@@ -10,6 +10,7 @@ from annotator.canny import CannyDetector
 from cldm.model import create_model, load_state_dict
 from ldm.models.diffusion.ddim import DDIMSampler
 import os
+import sys
 from PIL import Image
 
 from argparse import ArgumentParser
@@ -69,6 +70,16 @@ high_threshold = args.high_threshold
 image_resolution = 512
 eta = 0.0
 
+if os.path.isfile('prompt.txt'):
+    print('reading prompts from prompt.txt')
+    with open('prompt.txt', 'r') as f:
+        prompt = f.readlines()
+        prompt = [x.strip() for x in prompt if x.strip() != '']
+        prompt = ','.join(prompt)
+else:
+    print('Unable to find prompt.txt')
+    sys.exit()
+
 apply_canny = CannyDetector()
 
 model = create_model('./models/cldm_v15.yaml').cpu()
@@ -79,7 +90,7 @@ ddim_sampler = DDIMSampler(model)
 a_prompt = 'best quality, extremely detailed'
 n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-def main(prompt):
+def main():
     num_samples = 1
     with torch.no_grad():
         img = resize_image(HWC3(original_image), image_resolution)
@@ -89,7 +100,7 @@ def main(prompt):
         detected_map = HWC3(detected_map)
 
         pil_image_detected_map = Image.fromarray(255 - detected_map)
-        pil_image_detected_map.save(os.path.join('results', 'detected_map.png'))
+        pil_image_detected_map.save(os.path.join('results', f'{low_threshold}_{high_threshold}.png'))
 
         control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)
@@ -116,4 +127,4 @@ def main(prompt):
 
 if __name__ == '__main__':
     os.makedirs('results', exist_ok=True)
-    main('')
+    main()
