@@ -15,6 +15,25 @@ from cldm.model import create_model, load_state_dict
 from ldm.models.diffusion.ddim import DDIMSampler
 from PIL import Image
 
+from argparse import ArgumentParser
+parser = ArgumentParser()
+parser.add_argument(
+    '--image',
+    required=True,
+    type=str,
+    help='original image'
+)
+parser.add_argument(
+    '--seed',
+    type=int,
+    default=200000,
+    help='the seed (for reproducible sampling)',
+)
+args = parser.parse_args()
+
+original_image = np.array(Image.open(args.image))
+seed = args.seed
+
 apply_canny = CannyDetector()
 
 model = create_model('./models/cldm_v15.yaml').cpu()
@@ -22,11 +41,13 @@ model.load_state_dict(load_state_dict('./models/control_sd15_canny.pth', locatio
 model = model.cuda()
 ddim_sampler = DDIMSampler(model)
 
+a_prompt = 'best quality, extremely detailed'
+n_prompt = 'longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality'
 
-def process(input_image, prompt, a_prompt, n_prompt, num_samples, image_resolution, ddim_steps, scale, seed, eta, low_threshold, high_threshold):
-    input_image = np.array(Image.open('girl2.jpg'))
+def process(prompt, num_samples, image_resolution, ddim_steps, scale, eta, low_threshold, high_threshold):
+    
     with torch.no_grad():
-        img = resize_image(HWC3(input_image), image_resolution)
+        img = resize_image(HWC3(original_image), image_resolution)
         H, W, C = img.shape
 
         detected_map = apply_canny(img, low_threshold, high_threshold)
@@ -36,8 +57,6 @@ def process(input_image, prompt, a_prompt, n_prompt, num_samples, image_resoluti
         control = torch.stack([control for _ in range(num_samples)], dim=0)
         control = einops.rearrange(control, 'b h w c -> b c h w').clone()
 
-        if seed == -1:
-            seed = random.randint(0, 65535)
         seed_everything(seed)
 
         if config.save_memory:
@@ -81,14 +100,15 @@ with block:
                 high_threshold = gr.Slider(label="Canny high threshold", minimum=1, maximum=255, value=200, step=1)
                 ddim_steps = gr.Slider(label="Steps", minimum=1, maximum=100, value=20, step=1)
                 scale = gr.Slider(label="Guidance Scale", minimum=0.1, maximum=30.0, value=9.0, step=0.1)
-                seed = gr.Slider(label="Seed", minimum=-1, maximum=2147483647, step=1, randomize=True)
+                #seed = gr.Slider(label="Seed", minimum=-1, maximum=2147483647, step=1, randomize=True)
                 eta = gr.Number(label="eta (DDIM)", value=0.0)
-                a_prompt = gr.Textbox(label="Added Prompt", value='best quality, extremely detailed')
-                n_prompt = gr.Textbox(label="Negative Prompt",
-                                      value='longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality')
+                #a_prompt = gr.Textbox(label="Added Prompt", value='best quality, extremely detailed')
+                #n_prompt = gr.Textbox(label="Negative Prompt",
+                                      #value='longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality')
         with gr.Column():
             result_gallery = gr.Gallery(label='Output', show_label=False, elem_id="gallery").style(grid=2, height='auto')
-    ips = [input_image, prompt, a_prompt, n_prompt, num_samples, image_resolution, ddim_steps, scale, seed, eta, low_threshold, high_threshold]
+    #ips = [input_image, prompt, a_prompt, n_prompt, num_samples, image_resolution, ddim_steps, scale, seed, eta, low_threshold, high_threshold]
+    ips = [prompt, num_samples, image_resolution, ddim_steps, scale, eta, low_threshold, high_threshold]
     run_button.click(fn=process, inputs=ips, outputs=[result_gallery])
 
 
