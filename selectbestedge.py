@@ -25,6 +25,7 @@ apply_canny = CannyDetector()
 img = resize_image(HWC3(original_image), image_resolution)
 H, W, C = img.shape
 
+os.makedirs('results', exist_ok=True)
 for low_threshold in low_threshold_list:
     high_threshold_list = [x for x in low_threshold_list if x >= low_threshold]
 
