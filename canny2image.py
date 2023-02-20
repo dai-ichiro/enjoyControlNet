@@ -10,7 +10,6 @@ from annotator.canny import CannyDetector
 from cldm.model import create_model, load_state_dict
 from ldm.models.diffusion.ddim import DDIMSampler
 import os
-import sys
 from PIL import Image
 
 from argparse import ArgumentParser
@@ -30,7 +29,7 @@ parser.add_argument(
 parser.add_argument(
     '--n_samples',
     type=int,
-    default=5,
+    default=1,
     help='number of samples',
 )
 parser.add_argument(
@@ -57,6 +56,12 @@ parser.add_argument(
     default=200,
     help='Canny high threshold(min=1, max=255)',
 )
+parser.add_argument(
+    '--strength',
+    type=float,
+    default=1.0,
+    help='Control Strength(min=0.0, max=2.0)',
+)
 args = parser.parse_args()
 
 original_image = np.array(Image.open(args.image))
@@ -66,6 +71,7 @@ steps = args.steps
 scale = args.scale
 low_threshold = args.low_threshold
 high_threshold = args.high_threshold
+strength = args.strength
 
 image_resolution = 512
 eta = 0.0
@@ -77,8 +83,7 @@ if os.path.isfile('prompt.txt'):
         prompt = [x.strip() for x in prompt if x.strip() != '']
         prompt = ','.join(prompt)
 else:
-    print('Unable to find prompt.txt')
-    sys.exit()
+    prompt = ''
 
 apply_canny = CannyDetector()
 
@@ -110,6 +115,7 @@ def main():
         un_cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
         shape = (4, H // 8, W // 8)
 
+        model.control_scales = [strength] * 13
 
         for i in range(n_samples):
             temp_seed = seed + i * 1000
