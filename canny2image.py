@@ -8,7 +8,7 @@ from pytorch_lightning import seed_everything
 from annotator.util import resize_image, HWC3
 from annotator.canny import CannyDetector
 from cldm.model import create_model, load_state_dict
-from ldm.models.diffusion.ddim import DDIMSampler
+from cldm.ddim_hacked import DDIMSampler
 import os
 from PIL import Image
 
@@ -62,6 +62,10 @@ parser.add_argument(
     default=1.0,
     help='Control Strength(min=0.0, max=2.0)',
 )
+parser.add_argument(
+    '--guess',
+    action='store_true',
+    help='guess mode')
 args = parser.parse_args()
 
 original_image = np.array(Image.open(args.image))
@@ -72,6 +76,7 @@ scale = args.scale
 low_threshold = args.low_threshold
 high_threshold = args.high_threshold
 strength = args.strength
+guess_mode = args.guess
 
 image_resolution = 512
 eta = 0.0
@@ -112,14 +117,15 @@ def main():
         control = einops.rearrange(control, 'b h w c -> b c h w').clone()
 
         cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([prompt + ', ' + a_prompt] * num_samples)]}
-        un_cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
+        un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
         shape = (4, H // 8, W // 8)
 
-        model.control_scales = [strength] * 13
-
+        model.control_scales = [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13) 
+        
         for i in range(n_samples):
             temp_seed = seed + i * 1000
             seed_everything(temp_seed)
+            
             samples, intermediates = ddim_sampler.sample(steps, num_samples,
                                                         shape, cond, verbose=False, eta=eta,
                                                         unconditional_guidance_scale=scale,
