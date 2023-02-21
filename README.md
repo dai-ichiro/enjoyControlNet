@@ -1,6 +1,8 @@
 # enjoyControlNet
 
-For more details
+For more details (link to my blog)
+
+https://touch-sp.hatenablog.com/entry/2023/02/15/130109
 
 https://touch-sp.hatenablog.com/entry/2023/02/19/113308
 
