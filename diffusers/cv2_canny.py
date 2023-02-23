@@ -13,7 +13,7 @@ parser.add_argument(
 args = parser.parse_args()
 original_image = np.array(Image.open(args.image))
 
-threshold1_list = [50, 100, 150, 200, 250, 300]
+threshold1_list = [50, 100, 150, 200, 250, 300, 350, 400]
 
 os.makedirs('results', exist_ok=True)
 for threshold1 in threshold1_list:
