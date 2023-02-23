@@ -38,10 +38,30 @@ parser.add_argument(
     required=True,
     help='path to original image'
 )
+parser.add_argument(
+    '--threshold1',
+    type=int,
+    default=100,
+    help='low_threshold'
+)
+parser.add_argument(
+    '--threshold2',
+    type=int,
+    default=200,
+    help='high_threshold'
+)
+parser.add_argument(
+    '--from_canny',
+    action="store_true",
+    help='if true, use canny image'
+)
 args = parser.parse_args()
 
 seed = args.seed
 steps = args.steps
+
+threshold1 = args.threshold1
+threshold2 = args.threshold2
 
 bool_vae = False if args.vae is None else True
 vae_folder = args.vae
@@ -60,10 +80,12 @@ else:
 
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 
-original_image =Image.open(args.image)
-control = cv2.Canny(np.array(original_image), threshold1=100, threshold2=200)
+if args.from_canny:
+    control = np.array(Image.open(args.image))
+else:
+    control = cv2.Canny(np.array(Image.open(args.image)), threshold1=threshold1, threshold2=threshold2)
 
-Image.fromarray(control).save(os.path.join('results', 'canny.png'))
+    Image.fromarray(control).save(os.path.join('results', 'canny.png'))
 
 for i in range(args.n_samples):
     seed_i = seed + i * 1000
