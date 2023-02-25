@@ -1,3 +1,7 @@
+#### model ####
+model_id = "control_counterfeit_canny"
+#### model ####
+
 import os
 os.makedirs('results', exist_ok=True)
 
@@ -70,12 +74,12 @@ if bool_vae:
     from diffusers import AutoencoderKL
     vae = AutoencoderKL.from_pretrained(vae_folder).to("cuda")
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
-        "control_counterfeit_canny",
+        model_id,
         vae=vae,
         safety_checker=None).to("cuda")
 else:
     pipe = StableDiffusionControlNetPipeline.from_pretrained(
-        "control_counterfeit_canny",
+        model_id,
         safety_checker=None).to("cuda")
 
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
