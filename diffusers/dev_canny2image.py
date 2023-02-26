@@ -28,6 +28,13 @@ parser.add_argument(
     help='how many samples to produce for each given prompt',
 )
 parser.add_argument(
+    '--scale',
+    nargs='*',
+    default=[9.0],    
+    type=float,
+    help='guidance_scale',
+)
+parser.add_argument(
     '--image',
     type=str,
     required=True,
@@ -65,12 +72,13 @@ args = parser.parse_args()
 
 seed = args.seed
 steps = args.steps
+scale_list = args.scale
 
 threshold1 = args.threshold1
 threshold2 = args.threshold2
 
-vae_folder =args.vae
 
+vae_folder =args.vae
 base_model_id = args.model
 
 if args.from_canny:
@@ -96,15 +104,18 @@ pipe.enable_xformers_memory_efficient_attention()
 
 for i in range(args.n_samples):
     seed_i = seed + i * 1000
-    generator = torch.manual_seed(seed_i)
-    image = pipe(
-        prompt="best quality, extremely detailed", 
-        negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
-        image=control,
-        width = 512,
-        height = 512,
-        num_inference_steps=steps, 
-        generator=generator).images[0]
+    for scale in scale_list:
+        generator = torch.manual_seed(seed_i)
+        image = pipe(
+            prompt="best quality, extremely detailed", 
+            negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
+            image=control,
+            width = 512,
+            height = 512,
+            num_inference_steps=steps, 
+            generator=generator,
+            guidance_scale = scale,
+            ).images[0]
 
-    image.save(os.path.join('results', f'seed{seed_i}.png'))
+        image.save(os.path.join('results', f'scale{scale}_seed{seed_i}.png'))
     
