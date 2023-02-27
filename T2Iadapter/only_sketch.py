@@ -24,6 +24,12 @@ parser.add_argument(
     required=True,
     help='path to original image'
 )
+parser.add_argument(
+    '--resolution',
+    type=int,
+    default=512,
+    help='resolution'
+)
 opt = parser.parse_args()
 
 path_cond = opt.image
@@ -36,7 +42,7 @@ ckp = torch.load('models/table5_pidinet.pth', map_location='cpu')['state_dict']
 net_G.load_state_dict({k.replace('module.', ''): v for k, v in ckp.items()}, strict=True)
 net_G.to(device)
 
-max_resolution = 512 * 512
+max_resolution = opt.resolution ** 2
 
 im = cv2.imread(path_cond)
 im = resize_numpy_image(im, max_resolution=max_resolution)
