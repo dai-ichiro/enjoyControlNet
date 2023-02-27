@@ -68,6 +68,18 @@ parser.add_argument(
     type=str,
     help='vae'
 )
+parser.add_argument(
+    '--W',
+    type=int,
+    default=512,
+    help='width'
+)
+parser.add_argument(
+    '--H',
+    type=int,
+    default=512,
+    help='height'
+)
 args = parser.parse_args()
 
 seed = args.seed
@@ -77,6 +89,8 @@ scale_list = args.scale
 threshold1 = args.threshold1
 threshold2 = args.threshold2
 
+width = args.W
+height = args.H
 
 vae_folder =args.vae
 base_model_id = args.model
@@ -84,7 +98,10 @@ base_model_id = args.model
 if args.from_canny:
     control = load_image(args.image)
 else:
-    control = controlnet_hinter.hint_canny(np.array(load_image(args.image)), low_threshold=threshold1, high_threshold=threshold2)
+    control = controlnet_hinter.hint_canny(
+        np.array(load_image(args.image)), 
+        low_threshold=threshold1, high_threshold=threshold2,
+        width=width, height=height)
     control.save(os.path.join('results', 'canny.png'))
 
 if vae_folder is not None:
@@ -110,8 +127,8 @@ for i in range(args.n_samples):
             prompt="best quality, extremely detailed", 
             negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
             image=control,
-            width = 512,
-            height = 512,
+            width = width,
+            height = height,
             num_inference_steps=steps, 
             generator=generator,
             guidance_scale = scale,
