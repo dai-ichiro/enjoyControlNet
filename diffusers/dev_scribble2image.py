@@ -41,18 +41,6 @@ parser.add_argument(
     help='path to original image'
 )
 parser.add_argument(
-    '--threshold1',
-    type=int,
-    default=100,
-    help='low_threshold'
-)
-parser.add_argument(
-    '--threshold2',
-    type=int,
-    default=200,
-    help='high_threshold'
-)
-parser.add_argument(
     '--from_scribble',
     action="store_true",
     help='if true, use scribble image'
@@ -69,16 +57,10 @@ parser.add_argument(
     help='vae'
 )
 parser.add_argument(
-    '--W',
+    '--resolution',
     type=int,
     default=512,
-    help='width'
-)
-parser.add_argument(
-    '--H',
-    type=int,
-    default=512,
-    help='height'
+    help='resolution(need square image)'
 )
 args = parser.parse_args()
 
@@ -86,22 +68,18 @@ seed = args.seed
 steps = args.steps
 scale_list = args.scale
 
-threshold1 = args.threshold1
-threshold2 = args.threshold2
-
-width = args.W
-height = args.H
+resolution = args.resolution
 
 vae_folder =args.vae
 base_model_id = args.model
 
 if args.from_scribble:
-    control = load_image(args.image)
+    control = load_image(args.image).resize((resolution, resolution))
 else:
     control = controlnet_hinter.hint_fake_scribble(
         np.array(load_image(args.image)), 
-        width=width, height=height,
-        detect_resolution=height)
+        width=resolution, height=resolution,
+        detect_resolution=resolution)
     control.save(os.path.join('results', 'scribble.png'))
 
 if vae_folder is not None:
@@ -127,8 +105,8 @@ for i in range(args.n_samples):
             prompt="best quality, extremely detailed", 
             negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
             image=control,
-            width = width,
-            height = height,
+            width = resolution,
+            height = resolution,
             num_inference_steps=steps, 
             generator=generator,
             guidance_scale = scale,
