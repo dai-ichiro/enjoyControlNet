@@ -17,7 +17,7 @@ height, width, _ = original_image.shape
 threshold1_list = [50, 100, 150, 200, 250, 300, 350, 400]
 
 import os
-os.makedirs('results', exist_ok=True)
+os.makedirs('canny_results', exist_ok=True)
 
 for threshold1 in threshold1_list:
     threshold2_list = [x for x in threshold1_list if x >= threshold1]
@@ -27,4 +27,4 @@ for threshold1 in threshold1_list:
             low_threshold=threshold1, high_threshold=threshold2,
             width=width, height=height)
         
-        control.save(os.path.join('results', f'{threshold1}_{threshold2}.png'))
+        control.save(os.path.join('canny_results', f'{threshold1}_{threshold2}.png'))
