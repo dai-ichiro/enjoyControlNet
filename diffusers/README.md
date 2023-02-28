@@ -8,3 +8,7 @@ pip install transformers accelerate safetensors
 pip install controlnet_hinter
 pip install xformers==0.0.17.dev465
 ~~~
+
+## For more details (link to my blog)
+
+https://touch-sp.hatenablog.com/entry/2023/02/23/181611
