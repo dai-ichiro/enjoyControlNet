@@ -99,7 +99,7 @@ for i in range(args.n_samples):
     for each_control in zip(control_list, canny_list):    
         generator = torch.manual_seed(seed_i)
         image = pipe(
-            prompt="a beautiful girl wearing high neck sweater, best quality, extremely detailed", 
+            prompt="best quality, extremely detailed", 
             negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
             image=each_control[0],
             width = width,
