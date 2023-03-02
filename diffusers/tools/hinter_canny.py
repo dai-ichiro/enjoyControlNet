@@ -30,13 +30,14 @@ if args.resolution is not None:
 else:
     resolution = width
 
-threshold1_list = [25, 50, 100, 150, 200, 250]
+threshold_list = [25, 50, 100, 150, 200, 250]
 
 import os
 os.makedirs('canny_results', exist_ok=True)
 
-for threshold1 in threshold1_list:
-    for threshold2 in threshold1_list:
+for threshold1 in threshold_list:
+    new_list = [x for x in threshold_list if not x < threshold1]
+    for threshold2 in new_list:
         control = controlnet_hinter.hint_canny(
             original_image, 
             low_threshold=threshold1, high_threshold=threshold2,
