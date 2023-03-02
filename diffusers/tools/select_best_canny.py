@@ -2,7 +2,7 @@ import os
 os.makedirs('results', exist_ok=True)
 
 import torch
-from diffusers import StableDiffusionControlNetPipeline, AutoencoderKL, UNet2DConditionModel, EulerAncestralDiscreteScheduler
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, AutoencoderKL, EulerAncestralDiscreteScheduler
 from diffusers.utils import load_image
 
 import argparse
@@ -84,11 +84,11 @@ if vae_folder is not None:
 else:
     vae = AutoencoderKL.from_pretrained(base_model_id, subfolder='vae').to('cuda')
 
-unet = UNet2DConditionModel.from_pretrained(base_model_id, subfolder='unet').to('cuda')
+controlnet = ControlNetModel.from_pretrained("basemodel/sd-controlnet-canny")
 
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
-    'basemodel/control_sd15_canny',
-    unet=unet,
+    base_model_id,
+    controlnet=controlnet,
     vae=vae,
     safety_checker=None).to('cuda')
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
