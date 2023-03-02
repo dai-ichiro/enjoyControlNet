@@ -6,7 +6,7 @@ pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 --extra-index-url http
 pip install git+https://github.com/huggingface/diffusers.git
 pip install transformers accelerate safetensors
 pip install controlnet_hinter
-pip install xformers==0.0.17.dev465
+pip install xformers==0.0.17.dev466
 ~~~
 
 ## For more details (link to my blog)
