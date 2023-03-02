@@ -1,4 +1,4 @@
-# For develop version
+# ControlNet with Diffusers
 ## Requirements
 
 ~~~
