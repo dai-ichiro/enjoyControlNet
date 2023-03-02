@@ -96,7 +96,7 @@ vae_folder =args.vae
 base_model_id = args.model
 
 if args.from_canny:
-    control = load_image(args.image)
+    control = load_image(args.image).resize((resolution, resolution))
 else:
     control = controlnet_hinter.hint_canny(
         np.array(load_image(args.image)), 
