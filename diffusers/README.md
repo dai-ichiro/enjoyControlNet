@@ -1,4 +1,4 @@
-# ControlNet  Diffusers
+# ControlNet with Diffusers
 ## Requirements
 
 ~~~
