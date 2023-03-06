@@ -60,6 +60,11 @@ parser.add_argument(
     default=512,
     help='height'
 )
+parser.add_argument(
+    '--prompt',
+    type=str,
+    help='prompt'
+)
 args = parser.parse_args()
 
 seed = args.seed
@@ -94,13 +99,28 @@ pipe = StableDiffusionControlNetPipeline.from_pretrained(
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 pipe.enable_xformers_memory_efficient_attention()
 
+if args.prompt is not None and os.path.isfile(args.prompt):
+    print('reading prompts from prompt.txt')
+    with open(args.prompt, 'r') as f:
+        prompt_from_file = f.readlines()
+        prompt_from_file = [x.strip() for x in prompt_from_file if x.strip() != '']
+        prompt_from_file = ', '.join(prompt_from_file)
+        prompt = f'{prompt_from_file}, best quality, extremely detailed'
+else:
+    prompt = 'best quality, extremely detailed'
+
+negative_prompt = 'monochrome, lowres, bad anatomy, worst quality, low quality'
+
+print(f'prompt: {prompt}')
+print(f'negative prompt: {negative_prompt}')
+
 for i in range(args.n_samples):
     seed_i = seed + i * 1000
     for each_control in zip(control_list, canny_list):    
         generator = torch.manual_seed(seed_i)
         image = pipe(
-            prompt="best quality, extremely detailed", 
-            negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
+            prompt=prompt, 
+            negative_prompt=negative_prompt,
             image=each_control[0],
             width = width,
             height = height,
