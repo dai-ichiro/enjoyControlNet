@@ -83,7 +83,7 @@ parser.add_argument(
 parser.add_argument(
     '--prompt',
     type=str,
-    help='height'
+    help='prompt'
 )
 args = parser.parse_args()
 
