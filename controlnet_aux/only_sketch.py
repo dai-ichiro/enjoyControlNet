@@ -39,5 +39,5 @@ for threshold in opt.threshold_list:
     result_array = np.where(bool_array == False, 0, 255).astype(np.uint8)
 
     pil = Image.fromarray(result_array, mode='L')
-    pil.save(os.path.join('sketch_results', f'canny_{threshold}.png'))
+    pil.save(os.path.join('sketch_results', f'sketch_{threshold}.png'))
 
