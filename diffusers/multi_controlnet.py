@@ -47,6 +47,18 @@ parser.add_argument(
     default=19,
     help='the seed (for reproducible sampling)',
 )
+parser.add_argument(
+    '--H',
+    type=int,
+    default=512,
+    help='height',
+)
+parser.add_argument(
+    '--W',
+    type=int,
+    default=512,
+    help='width',
+)
 args = parser.parse_args()
 
 model_id = args.model
@@ -58,20 +70,25 @@ controlnet2 = args.controlnet2
 image1 = args.controlnet1_image
 image2 = args.controlnet2_image
 
+width = args.W
+height = args.H
+
 if vae_folder is not None:
-    vae = AutoencoderKL.from_pretrained(vae_folder).to('cuda')
+    vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
 else:
-    vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae').to('cuda')
+    vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16).to('cuda')
 
 pipe = StableDiffusionMultiControlNetPipeline.from_pretrained(
     model_id,
     vae=vae,
-    safety_checker=None).to("cuda")
+    safety_checker=None,
+    torch_dtype=torch.float16).to("cuda")
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 pipe.enable_xformers_memory_efficient_attention()
+pipe.enable_model_cpu_offload()
 
-controlnet_processor1 = ControlNetModel.from_pretrained(controlnet1).to("cuda")
-controlnet_processor2 = ControlNetModel.from_pretrained(controlnet2).to("cuda")
+controlnet_processor1 = ControlNetModel.from_pretrained(controlnet1, torch_dtype=torch.float16).to("cuda")
+controlnet_processor2 = ControlNetModel.from_pretrained(controlnet2, torch_dtype=torch.float16).to("cuda")
 
 control_image1 = load_image(image1)  # load_image always return RGB format image
 control_image2 = load_image(image2)  # refer to diffusers/src/diffusers/utils/testing_utils.py
@@ -85,27 +102,13 @@ image = pipe(
     prompt=prompt,
     negative_prompt=negative_prompt,
     processors=[
-        #ControlNetProcessor(controlnet_processor1, control_image1),
-        ControlNetProcessor(controlnet_processor2, control_image2),
-    ],
-    generator = torch.manual_seed(seed),
-    num_inference_steps=30,
-    width=512,
-    height=512,
-).images[0]
-image.save(f"./controlnet2_only_result_{seed}.png")
-
-image = pipe(
-    prompt=prompt,
-    negative_prompt=negative_prompt,
-    processors=[
         ControlNetProcessor(controlnet_processor1, control_image1),
         #ControlNetProcessor(controlnet_processor2, control_image2),
     ],
     generator = torch.manual_seed(seed),
     num_inference_steps=30,
-    width=512,
-    height=512,
+    width=width,
+    height=height,
 ).images[0]
 image.save(f"./controlnet1_only_result_{seed}.png")
 
@@ -113,12 +116,26 @@ image = pipe(
     prompt=prompt,
     negative_prompt=negative_prompt,
     processors=[
+        #ControlNetProcessor(controlnet_processor1, control_image1),
+        ControlNetProcessor(controlnet_processor2, control_image2),
+    ],
+    generator = torch.manual_seed(seed),
+    num_inference_steps=30,
+    width=width,
+    height=height,
+).images[0]
+image.save(f"./controlnet2_only_result_{seed}.png")
+
+image = pipe(
+    prompt=prompt,
+    negative_prompt=negative_prompt,
+    processors=[
         ControlNetProcessor(controlnet_processor2, control_image2),
         ControlNetProcessor(controlnet_processor1, control_image1),
     ],
     generator = torch.manual_seed(seed),
     num_inference_steps=30,
-    width=512,
-    height=512,
+    width=width,
+    height=height,
 ).images[0]
 image.save(f"./controlnet_both_result_{seed}.png")
