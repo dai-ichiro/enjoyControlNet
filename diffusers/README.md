@@ -16,7 +16,7 @@ https://touch-sp.hatenablog.com/entry/2023/02/23/181611
 ## How to use multi_controlnet.py
 
 ~~~
-python multi.py ^
+python multi_controlnet.py ^
   --model model\anything-v4.0 ^
   --vae vae\any4_vae ^
   --controlnet1 basemodel\sd-controlnet-canny ^
