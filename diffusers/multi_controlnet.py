@@ -41,6 +41,12 @@ parser.add_argument(
     required=True,
     help='image for controlnet2'
 )
+parser.add_argument(
+    '--seed',
+    type=int,
+    default=19,
+    help='the seed (for reproducible sampling)',
+)
 args = parser.parse_args()
 
 model_id = args.model
@@ -72,46 +78,47 @@ control_image2 = load_image(image2)  # refer to diffusers/src/diffusers/utils/te
 
 prompt = "best quality, extremely detailed, cowboy shot"
 negative_prompt = "cowboy, monochrome, lowres, bad anatomy, worst quality, low quality"
-seed = 19
+
+seed = args.seed
+
+image = pipe(
+    prompt=prompt,
+    negative_prompt=negative_prompt,
+    processors=[
+        #ControlNetProcessor(controlnet_processor1, control_image1),
+        ControlNetProcessor(controlnet_processor2, control_image2),
+    ],
+    generator = torch.manual_seed(seed),
+    num_inference_steps=30,
+    width=512,
+    height=512,
+).images[0]
+image.save(f"./controlnet2_only_result_{seed}.png")
+
+image = pipe(
+    prompt=prompt,
+    negative_prompt=negative_prompt,
+    processors=[
+        ControlNetProcessor(controlnet_processor1, control_image1),
+        #ControlNetProcessor(controlnet_processor2, control_image2),
+    ],
+    generator = torch.manual_seed(seed),
+    num_inference_steps=30,
+    width=512,
+    height=512,
+).images[0]
+image.save(f"./controlnet1_only_result_{seed}.png")
 
 image = pipe(
     prompt=prompt,
     negative_prompt=negative_prompt,
     processors=[
         ControlNetProcessor(controlnet_processor2, control_image2),
-        # ControlNetProcessor(controlnet_canny, canny_image),
-    ],
-    generator=torch.Generator(device="cpu").manual_seed(seed),
-    num_inference_steps=30,
-    width=512,
-    height=512,
-).images[0]
-image.save(f"./mc_pose_only_result_{seed}.png")
-
-image = pipe(
-    prompt=prompt,
-    negative_prompt=negative_prompt,
-    processors=[
-        # ControlNetProcessor(controlnet_pose, pose_image),
         ControlNetProcessor(controlnet_processor1, control_image1),
     ],
-    generator=torch.Generator(device="cpu").manual_seed(seed),
+    generator = torch.manual_seed(seed),
     num_inference_steps=30,
     width=512,
     height=512,
 ).images[0]
-image.save(f"./mc_canny_only_result_{seed}.png")
-
-image = pipe(
-    prompt=prompt,
-    negative_prompt=negative_prompt,
-    processors=[
-        ControlNetProcessor(controlnet_processor2, control_image2),
-        ControlNetProcessor(controlnet_processor1, control_image1),
-    ],
-    generator=torch.Generator(device="cpu").manual_seed(seed),
-    num_inference_steps=30,
-    width=512,
-    height=512,
-).images[0]
-image.save(f"./mc_pose_and_canny_result_{seed}.png")
+image.save(f"./controlnet_both_result_{seed}.png")
