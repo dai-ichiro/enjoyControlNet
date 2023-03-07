@@ -13,6 +13,19 @@ pip install xformers==0.0.17.dev466
 
 https://touch-sp.hatenablog.com/entry/2023/02/23/181611
 
+## How to use canny2image.py
+
+~~~
+python canny2image.py ^
+  --model model\Counterfeit-V2.5 ^
+  --vae vae\counterfeit_vae ^
+  --H 1024 --W 1024 ^
+  --prompt prompt.txt ^
+  --threshold1 50 --threshold2 50 ^
+  --image sample.jpg ^
+  --n_samples 10
+~~~
+
 ## How to use multi_controlnet.py
 
 ~~~
