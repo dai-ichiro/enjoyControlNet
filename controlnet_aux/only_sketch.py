@@ -4,7 +4,7 @@ from PIL import Image
 import argparse
 import os 
 
-os.makedirs('canny_results', exist_ok=True)
+os.makedirs('sketch_results', exist_ok=True)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -28,15 +28,16 @@ parser.add_argument(
 )
 opt = parser.parse_args()
 
-image = Image.open(opt.image)
+resolution = opt.resolution
+image = Image.open(opt.image).resize((resolution, resolution))
 
 hed = HEDdetector.from_pretrained('lllyasviel/ControlNet')
-hed_array = np.array(hed(image).convert('L'))
+hed_array = np.array(hed(image, detect_resolution=resolution, image_resolution=resolution).convert('L'))
 
 for threshold in opt.threshold_list:
     bool_array = hed_array > (255 * threshold)
     result_array = np.where(bool_array == False, 0, 255).astype(np.uint8)
 
     pil = Image.fromarray(result_array, mode='L')
-    pil.save(os.path.join('canny_results', f'canny_{threshold}.png'))
+    pil.save(os.path.join('sketch_results', f'canny_{threshold}.png'))
 
