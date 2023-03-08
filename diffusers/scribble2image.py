@@ -87,7 +87,7 @@ if vae_folder is not None:
 else:
     vae = AutoencoderKL.from_pretrained(base_model_id, subfolder='vae').to('cuda')
 
-controlnet = ControlNetModel.from_pretrained("basemodel/sd-controlnet-canny")
+controlnet = ControlNetModel.from_pretrained("basemodel/sd-controlnet-scribble")
 
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     base_model_id,
