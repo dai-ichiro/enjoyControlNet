@@ -1,3 +1,4 @@
+import os
 import torch
 from stable_diffusion_controlnet_inpaint import StableDiffusionControlNetInpaintPipeline
 
@@ -54,6 +55,11 @@ parser.add_argument(
     default=1,
     help='how many samples to produce for each given prompt',
 )
+parser.add_argument(
+    '--prompt',
+    type=str,
+    help='prompt'
+)
 opt = parser.parse_args()
 
 width = opt.W
@@ -79,15 +85,30 @@ controlnet_conditioning_image = load_image(opt.hint).resize((width, height))
 
 seed = opt.seed
 
+if opt.prompt is not None and os.path.isfile(opt.prompt):
+    print('reading prompts from prompt.txt')
+    with open(opt.prompt, 'r') as f:
+        prompt_from_file = f.readlines()
+        prompt_from_file = [x.strip() for x in prompt_from_file if x.strip() != '']
+        prompt_from_file = ', '.join(prompt_from_file)
+        prompt = f'{prompt_from_file}, best quality, extremely detailed'
+else:
+    prompt = 'best quality, extremely detailed'
+
+negative_prompt = 'monochrome, lowres, bad anatomy, worst quality, low quality'
+
+print(f'prompt: {prompt}')
+print(f'negative prompt: {negative_prompt}')
+
 for i in range(opt.n_samples):
     seed_i = seed + i * 1000
     generator = torch.manual_seed(seed_i)
     image = pipe(
-        "Face of a young boy smiling, anime, best quality, extremely detailed",
+        prompt,
         image,
         mask_image,
         controlnet_conditioning_image,
-        negative_prompt='monochrome, lowres, bad anatomy, worst quality, low quality',
+        negative_prompt=negative_prompt,
         num_inference_steps=50,
         width=width,
         height=height,
