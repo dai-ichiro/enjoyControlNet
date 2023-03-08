@@ -39,7 +39,7 @@ python multi_controlnet.py ^
   --controlnet2_image pose_image.png
 ~~~
 
-## How to inpaint.py
+## How to use inpaint.py
 
 ~~~
 python inpaint.py ^
