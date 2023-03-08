@@ -39,6 +39,20 @@ python multi_controlnet.py ^
   --controlnet2_image pose_image.png
 ~~~
 
+## How to inpaint.py
+
+~~~
+python inpaint.py ^
+  --controlnet basemodel\sd-controlnet-openpose ^
+  --image original_image.jpg ^
+  --mask mask.png ^
+  --hint pose.png ^
+  --W 768 --H 768 ^
+  --prompt prompt.txt ^
+  --seed 40000 ^
+  --n_samples 10
+~~~
+
 ## For more details (link to my blog)
 
 https://touch-sp.hatenablog.com/entry/2023/02/23/181611
