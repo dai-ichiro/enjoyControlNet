@@ -2,7 +2,7 @@ import os
 import torch
 from stable_diffusion_controlnet_inpaint import StableDiffusionControlNetInpaintPipeline
 
-from diffusers import ControlNetModel, EulerAncestralDiscreteScheduler
+from diffusers import ControlNetModel
 from diffusers.utils import load_image
 
 import argparse
@@ -60,6 +60,12 @@ parser.add_argument(
     type=str,
     help='prompt'
 )
+parser.add_argument(
+    '--scheduler',
+    type=str,
+    default='pndm',
+    choices=['pndm', 'multistepdpm', 'eulera']
+)
 opt = parser.parse_args()
 
 width = opt.W
@@ -75,7 +81,21 @@ pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
     safety_checker=None, 
     torch_dtype=torch.float16)
 
-pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+scheduler = opt.scheduler
+match scheduler:
+    case 'pmdn':
+        from diffusers import  PNDMScheduler
+        pipe.scheduler = PNDMScheduler.from_config(pipe.scheduler.config)
+    case 'multistepdpm':
+        from diffusers import DPMSolverMultistepScheduler
+        pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+    case 'eulera':
+        from diffusers import EulerAncestralDiscreteScheduler
+        pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+    case _:
+        None
+
+#pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 pipe.enable_xformers_memory_efficient_attention()
 pipe.enable_model_cpu_offload()
 
@@ -115,4 +135,4 @@ for i in range(opt.n_samples):
         generator=generator
     ).images[0]
 
-    image.save(f"out_seed{seed_i}.png")
+    image.save(f"out_seed{seed_i}_{scheduler}.png")
