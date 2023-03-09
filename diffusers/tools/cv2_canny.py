@@ -13,24 +13,27 @@ parser.add_argument(
 parser.add_argument(
     '--W',
     type=int,
-    default=512,
     help='width'
 )
 parser.add_argument(
     '--H',
     type=int,
-    default=512,
     help='height'
 )
 
 args = parser.parse_args()
 
-width = args.W
-height = args.H
-
-original_image = np.array(Image.open(args.image).resize((width, height)))
-
-threshold1_list = [50, 100, 150, 200]
+if args.W is None and args.H is None:
+    original_image = np.array(Image.open(args.image))
+else:
+    if args.W is None:
+        original_image = np.array(Image.open(args.image)).resize((args.H, args.H))
+    elif args.H is None:
+        original_image = np.array(Image.open(args.image)).resize((args.W, args.W))
+    else:
+        original_image = np.array(Image.open(args.image)).resize((args.W, args.H))
+    
+threshold1_list = [25, 50, 100, 150, 200]
 
 os.makedirs('canny_results', exist_ok=True)
 for threshold1 in threshold1_list:
