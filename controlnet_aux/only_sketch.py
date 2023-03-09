@@ -23,13 +23,17 @@ parser.add_argument(
 parser.add_argument(
     '--resolution',
     type=int,
-    default=512,
     help='resolution'
 )
 opt = parser.parse_args()
 
 resolution = opt.resolution
-image = Image.open(opt.image).resize((resolution, resolution))
+
+if resolution is None:
+    image = Image.open(opt.image)
+    resolution = image.height
+else:
+    image = Image.open(opt.image).resize((resolution, resolution))
 
 hed = HEDdetector.from_pretrained('lllyasviel/ControlNet')
 hed_array = np.array(hed(image, detect_resolution=resolution, image_resolution=resolution).convert('L'))
