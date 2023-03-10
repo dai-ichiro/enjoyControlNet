@@ -18,4 +18,4 @@ openpose = OpenposeDetector.from_pretrained('lllyasviel/ControlNet')
 image = Image.open(image)
 result = openpose(image)
 
-result.save('pose_result.png')
+result.save('pose.png')
