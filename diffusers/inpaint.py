@@ -73,6 +73,8 @@ height = opt.H
 
 controlnet_model = opt.controlnet
 
+n_samples = opt.n_samples
+
 controlnet = ControlNetModel.from_pretrained(controlnet_model, torch_dtype=torch.float16)
 
 pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
@@ -95,13 +97,19 @@ match scheduler:
     case _:
         None
 
-#pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 pipe.enable_xformers_memory_efficient_attention()
 pipe.enable_model_cpu_offload()
 
 image = load_image(opt.image).resize((width, height))
 mask_image = load_image(opt.mask).resize((width, height))
-controlnet_conditioning_image = load_image(opt.hint).resize((width, height))
+
+if os.path.isdir(opt.hint):
+    import glob
+    hint_list = glob.glob(f'{opt.hint}/*.png')
+    n_samples = 1
+elif os.path.isfile(opt.hint):
+    hint_list = [opt.hint]
+print(f'n_samples: {n_samples}')
 
 seed = opt.seed
 
@@ -120,19 +128,24 @@ negative_prompt = 'monochrome, lowres, bad anatomy, worst quality, low quality'
 print(f'prompt: {prompt}')
 print(f'negative prompt: {negative_prompt}')
 
-for i in range(opt.n_samples):
-    seed_i = seed + i * 1000
-    generator = torch.manual_seed(seed_i)
-    image = pipe(
-        prompt,
-        image,
-        mask_image,
-        controlnet_conditioning_image,
-        negative_prompt=negative_prompt,
-        num_inference_steps=50,
-        width=width,
-        height=height,
-        generator=generator
-    ).images[0]
+os.makedirs('results', exist_ok=True)
 
-    image.save(f"out_seed{seed_i}_{scheduler}.png")
+for hint_image in hint_list:
+    hint_fname = os.path.splitext(os.path.basename(hint_image))[0]
+    controlnet_conditioning_image = load_image(hint_image).resize((width, height))
+    for i in range(n_samples):
+        seed_i = seed + i * 1000
+        generator = torch.manual_seed(seed_i)
+        image = pipe(
+            prompt,
+            image,
+            mask_image,
+            controlnet_conditioning_image,
+            negative_prompt=negative_prompt,
+            num_inference_steps=50,
+            width=width,
+            height=height,
+            generator=generator
+        ).images[0]
+
+        image.save(os.path.join('results', f"{hint_fname}_seed{seed_i}_{scheduler}.png"))
