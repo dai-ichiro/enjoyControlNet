@@ -81,7 +81,7 @@ pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
     "model/stable-diffusion-inpainting", 
     controlnet=controlnet, 
     safety_checker=None, 
-    torch_dtype=torch.float16)
+    torch_dtype=torch.float16).to('cuda')
 
 scheduler = opt.scheduler
 match scheduler:
@@ -98,7 +98,6 @@ match scheduler:
         None
 
 pipe.enable_xformers_memory_efficient_attention()
-pipe.enable_model_cpu_offload()
 
 image = load_image(opt.image).resize((width, height))
 mask_image = load_image(opt.mask).resize((width, height))
@@ -114,7 +113,7 @@ print(f'n_samples: {n_samples}')
 seed = opt.seed
 
 if opt.prompt is not None and os.path.isfile(opt.prompt):
-    print('reading prompts from prompt.txt')
+    print(f'reading prompts from {opt.prompt}')
     with open(opt.prompt, 'r') as f:
         prompt_from_file = f.readlines()
         prompt_from_file = [x.strip() for x in prompt_from_file if x.strip() != '']
