@@ -6,6 +6,12 @@ from diffusers.utils import load_image
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument(
+    '--image',
+    type=str,
+    required=True,
+    help='original image'
+)
+parser.add_argument(
     '--seed',
     type=int,
     default=20000,
@@ -27,9 +33,25 @@ parser.add_argument(
     default='eulera',
     choices=['pndm', 'multistepdpm', 'eulera']
 )
+parser.add_argument(
+    '--n_samples',
+    type=int,
+    default=1,
+    help='how many samples to produce for each given prompt',
+)
 args = parser.parse_args()
 
-model_id = "model/waifu-diffusion"
+model_id = "model/stable-diffusion-2-1-base"
+
+n_samples = args.n_samples
+
+if os.path.isdir(args.image):
+    import glob
+    hint_list = glob.glob(f'{args.image}/*.png')
+    n_samples = 1
+elif os.path.isfile(args.image):
+    hint_list = [args.image]
+print(f'n_samples: {n_samples}')
 
 vae_folder =args.vae
 if vae_folder is not None:
@@ -59,7 +81,7 @@ match scheduler:
         None
 pipe.enable_xformers_memory_efficient_attention()
 
-canny_image = load_image('canny_results/100_200.png')
+#canny_image = load_image('canny_results/100_200.png')
 
 if args.prompt is not None and os.path.isfile(args.prompt):
     print(f'reading prompts from {args.prompt}')
@@ -76,12 +98,21 @@ negative_prompt = 'monochrome, lowres, bad anatomy, worst quality, low quality'
 print(f'prompt: {prompt}')
 print(f'negative prompt: {negative_prompt}')
 
-im = pipe(
-    prompt=prompt,
-    negative_prompt=negative_prompt, 
-    image=canny_image, 
-    num_inference_steps=30,    
-    generator=torch.manual_seed(args.seed)
-).images[0]
+os.makedirs('results', exist_ok=True)
 
-im.save('canny_result.png')
+seed = args.seed
+
+for hint_image in hint_list:
+    hint_fname = os.path.splitext(os.path.basename(hint_image))[0]
+    canny_image = load_image(hint_image)
+    for i in range(n_samples):
+        seed_i = seed + i * 1000
+        im = pipe(
+            prompt=prompt,
+            negative_prompt=negative_prompt, 
+            image=canny_image, 
+            num_inference_steps=30,    
+            generator=torch.manual_seed(seed_i)
+        ).images[0]
+
+        im.save(os.path.join('results', f'seed{seed_i}_{hint_fname}_result.png'))
