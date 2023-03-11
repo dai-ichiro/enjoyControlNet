@@ -33,9 +33,9 @@ python canny2image.py ^
 python multi_controlnet.py ^
   --model model\anything-v4.0 ^
   --vae vae\any4_vae ^
-  --controlnet1 basemodel\sd-controlnet-canny ^
+  --controlnet1 controlnet\sd-controlnet-canny ^
   --controlnet1_image canny_image.png ^
-  --controlnet2 basemodel\sd-controlnet-openpose ^
+  --controlnet2 controlnet\sd-controlnet-openpose ^
   --controlnet2_image pose_image.png
 ~~~
 
