@@ -33,4 +33,4 @@ else:
     result = image * (mask != 255)
 
 save_fname = os.path.splitext(os.path.basename(opt.image))[0]
-Image.fromarray(result).save(f'mask_{save_fname}_.png')    
+Image.fromarray(result).save(f'mask_{save_fname}.png')    
