@@ -63,7 +63,7 @@ cv2.setMouseCallback('image', draw)
 
 while True:  
     k = cv2.waitKey(1) & 0xFF
-    if k == ord('q'):
+    if k == ord('s'):
         cv2.imwrite(f'{img_fname_no_ext}_modified.png', original_image)
     elif k & 0xFF == 27:
         break
