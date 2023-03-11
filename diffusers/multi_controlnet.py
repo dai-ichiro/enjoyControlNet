@@ -1,7 +1,5 @@
-from stable_diffusion_multi_controlnet import StableDiffusionMultiControlNetPipeline
-from stable_diffusion_multi_controlnet import ControlNetProcessor
-from diffusers import ControlNetModel, AutoencoderKL, EulerAncestralDiscreteScheduler
 import torch
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, EulerAncestralDiscreteScheduler, AutoencoderKL
 from diffusers.utils import load_image
 
 import argparse
@@ -47,18 +45,6 @@ parser.add_argument(
     default=19,
     help='the seed (for reproducible sampling)',
 )
-parser.add_argument(
-    '--H',
-    type=int,
-    default=512,
-    help='height',
-)
-parser.add_argument(
-    '--W',
-    type=int,
-    default=512,
-    help='width',
-)
 args = parser.parse_args()
 
 model_id = args.model
@@ -70,72 +56,87 @@ controlnet2 = args.controlnet2
 image1 = args.controlnet1_image
 image2 = args.controlnet2_image
 
-width = args.W
-height = args.H
-
 if vae_folder is not None:
     vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
 else:
     vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16).to('cuda')
 
-pipe = StableDiffusionMultiControlNetPipeline.from_pretrained(
+controlnet_processor1 = ControlNetModel.from_pretrained(controlnet1, torch_dtype=torch.float16).to('cuda')
+controlnet_processor2 = ControlNetModel.from_pretrained(controlnet2, torch_dtype=torch.float16).to('cuda')
+
+'''
+pipe = StableDiffusionControlNetPipeline.from_pretrained(
     model_id,
     vae=vae,
+    controlnet=[controlnet_processor1, controlnet_processor2],
     safety_checker=None,
-    torch_dtype=torch.float16).to("cuda")
+    torch_dtype=torch.float16).to('cuda')
+
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 pipe.enable_xformers_memory_efficient_attention()
-pipe.enable_model_cpu_offload()
-
-controlnet_processor1 = ControlNetModel.from_pretrained(controlnet1, torch_dtype=torch.float16).to("cuda")
-controlnet_processor2 = ControlNetModel.from_pretrained(controlnet2, torch_dtype=torch.float16).to("cuda")
-
+'''
 control_image1 = load_image(image1)  # load_image always return RGB format image
 control_image2 = load_image(image2)  # refer to diffusers/src/diffusers/utils/testing_utils.py
 
-prompt = "best quality, extremely detailed, cowboy shot"
+prompt = "a beautiful girl wearing high neck sweater, best quality, extremely detailed, cowboy shot"
 negative_prompt = "cowboy, monochrome, lowres, bad anatomy, worst quality, low quality"
 
 seed = args.seed
 
-image = pipe(
+'''
+#controlnet1 only
+pipe1 = StableDiffusionControlNetPipeline.from_pretrained(
+    model_id,
+    vae=vae,
+    controlnet=[controlnet_processor1],
+    safety_checker=None,
+    torch_dtype=torch.float16).to('cuda')
+pipe1.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe1.scheduler.config)
+pipe1.enable_xformers_memory_efficient_attention()
+
+image = pipe1(
     prompt=prompt,
     negative_prompt=negative_prompt,
-    processors=[
-        ControlNetProcessor(controlnet_processor1, control_image1),
-        #ControlNetProcessor(controlnet_processor2, control_image2),
-    ],
+    image = [control_image1],
     generator = torch.manual_seed(seed),
     num_inference_steps=30,
-    width=width,
-    height=height,
 ).images[0]
 image.save(f"./controlnet1_only_result_{seed}.png")
 
-image = pipe(
+#controlnet2 only
+pipe2 = StableDiffusionControlNetPipeline.from_pretrained(
+    model_id,
+    vae=vae,
+    controlnet=[controlnet_processor2],
+    safety_checker=None,
+    torch_dtype=torch.float16).to('cuda')
+pipe2.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe2.scheduler.config)
+pipe2.enable_xformers_memory_efficient_attention()
+
+image = pipe2(
     prompt=prompt,
     negative_prompt=negative_prompt,
-    processors=[
-        #ControlNetProcessor(controlnet_processor1, control_image1),
-        ControlNetProcessor(controlnet_processor2, control_image2),
-    ],
+    image = [control_image2],
     generator = torch.manual_seed(seed),
     num_inference_steps=30,
-    width=width,
-    height=height,
 ).images[0]
 image.save(f"./controlnet2_only_result_{seed}.png")
+'''
+#controlnet1 and controlnet2
+pipe3 = StableDiffusionControlNetPipeline.from_pretrained(
+    model_id,
+    vae=vae,
+    controlnet=[controlnet_processor1, controlnet_processor2],
+    safety_checker=None,
+    torch_dtype=torch.float16).to('cuda')
+pipe3.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe3.scheduler.config)
+pipe3.enable_xformers_memory_efficient_attention()
 
-image = pipe(
+image = pipe3(
     prompt=prompt,
     negative_prompt=negative_prompt,
-    processors=[
-        ControlNetProcessor(controlnet_processor2, control_image2),
-        ControlNetProcessor(controlnet_processor1, control_image1),
-    ],
+    image = [control_image1, control_image2],
     generator = torch.manual_seed(seed),
     num_inference_steps=30,
-    width=width,
-    height=height,
 ).images[0]
-image.save(f"./controlnet_both_result_{seed}.png")
+image.save(f"./controlnet_both_result_{seed}.png")#
