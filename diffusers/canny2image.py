@@ -125,7 +125,7 @@ pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.conf
 pipe.enable_xformers_memory_efficient_attention()
 
 if args.prompt is not None and os.path.isfile(args.prompt):
-    print('reading prompts from prompt.txt')
+    print(f'reading prompts from {args.prompt}')
     with open(args.prompt, 'r') as f:
         prompt_from_file = f.readlines()
         prompt_from_file = [x.strip() for x in prompt_from_file if x.strip() != '']
