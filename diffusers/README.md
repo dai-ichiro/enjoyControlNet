@@ -51,7 +51,7 @@ https://touch-sp.hatenablog.com/entry/2023/03/13/141954
 
 ~~~
 python inpaint.py ^
-  --controlnet basemodel\sd-controlnet-openpose ^
+  --controlnet controlnet\sd-controlnet-openpose ^
   --image original_image.jpg ^
   --mask mask.png ^
   --hint pose.png ^
