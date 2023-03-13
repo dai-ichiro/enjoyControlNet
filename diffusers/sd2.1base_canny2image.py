@@ -39,9 +39,15 @@ parser.add_argument(
     default=1,
     help='how many samples to produce for each given prompt',
 )
+parser.add_argument(
+    '--model',
+    type=str,
+    default="model/stable-diffusion-2-1-base",
+    help='path to model',
+)
 args = parser.parse_args()
 
-model_id = "model/stable-diffusion-2-1-base"
+model_id = args.model
 
 n_samples = args.n_samples
 
@@ -51,7 +57,6 @@ if os.path.isdir(args.image):
     n_samples = 1
 elif os.path.isfile(args.image):
     hint_list = [args.image]
-print(f'n_samples: {n_samples}')
 
 vae_folder =args.vae
 if vae_folder is not None:
@@ -59,7 +64,7 @@ if vae_folder is not None:
 else:
     vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae').to('cuda')
 
-controlnet=ControlNetModel.from_pretrained("controlnet/sd21-controlnet-canny", torch_dtype=torch.float16)
+controlnet=ControlNetModel.from_pretrained("controlnet/controlnet-sd21-canny-diffusers", torch_dtype=torch.float16)
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     model_id,
     safety_checker=None,
@@ -81,8 +86,6 @@ match scheduler:
         None
 pipe.enable_xformers_memory_efficient_attention()
 
-#canny_image = load_image('canny_results/100_200.png')
-
 if args.prompt is not None and os.path.isfile(args.prompt):
     print(f'reading prompts from {args.prompt}')
     with open(args.prompt, 'r') as f:
@@ -95,6 +98,7 @@ else:
 
 negative_prompt = 'monochrome, lowres, bad anatomy, worst quality, low quality'
 
+print(f'n_samples: {n_samples}')
 print(f'prompt: {prompt}')
 print(f'negative prompt: {negative_prompt}')
 
