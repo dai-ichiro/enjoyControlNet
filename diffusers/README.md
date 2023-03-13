@@ -27,6 +27,10 @@ python canny2image.py ^
   --n_samples 10
 ~~~
 
+#### For more details (link to my blog)
+
+https://touch-sp.hatenablog.com/entry/2023/02/23/181611
+
 ## How to use multi_controlnet.py
 
 ~~~
@@ -38,6 +42,10 @@ python multi_controlnet.py ^
   --controlnet2 controlnet\sd-controlnet-openpose ^
   --controlnet2_image pose_image.png
 ~~~
+
+#### For more details (link to my blog)
+
+https://touch-sp.hatenablog.com/entry/2023/03/13/141954
 
 ## How to use inpaint.py
 
@@ -53,6 +61,7 @@ python inpaint.py ^
   --n_samples 10
 ~~~
 
-## For more details (link to my blog)
+#### For more details (link to my blog)
 
-https://touch-sp.hatenablog.com/entry/2023/02/23/181611
+https://touch-sp.hatenablog.com/entry/2023/03/10/135439
+
