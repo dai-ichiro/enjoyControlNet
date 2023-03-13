@@ -65,6 +65,7 @@ else:
     vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae').to('cuda')
 
 controlnet=ControlNetModel.from_pretrained("controlnet/controlnet-sd21-canny-diffusers", torch_dtype=torch.float16)
+#controlnet=ControlNetModel.from_pretrained("thibaud/controlnet-sd21-canny-diffusers", torch_dtype=torch.float16)
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     model_id,
     safety_checker=None,
