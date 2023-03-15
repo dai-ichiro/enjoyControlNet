@@ -24,11 +24,8 @@ pip install controlnet-aux
 python canny2image.py ^
   --model model\Counterfeit-V2.5 ^
   --vae vae\counterfeit_vae ^
-  --H 1024 --W 1024 ^
   --prompt prompt.txt ^
-  --threshold1 50 --threshold2 50 ^
   --image sample.jpg ^
-  --n_samples 10
 ~~~
 
 #### For more details (link to my blog)
