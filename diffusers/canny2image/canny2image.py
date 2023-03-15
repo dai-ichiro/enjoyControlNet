@@ -41,16 +41,6 @@ parser.add_argument(
     help='path to original image'
 )
 parser.add_argument(
-    '--threshold1',
-    type=int,
-    help='low_threshold'
-)
-parser.add_argument(
-    '--threshold2',
-    type=int,
-    help='high_threshold'
-)
-parser.add_argument(
     '--from_canny',
     action="store_true",
     help='if true, use canny image'
@@ -76,9 +66,6 @@ args = parser.parse_args()
 seed = args.seed
 steps = args.steps
 scale_list = args.scale
-
-threshold1 = args.threshold1
-threshold2 = args.threshold2
 
 vae_folder =args.vae
 base_model_id = args.model
