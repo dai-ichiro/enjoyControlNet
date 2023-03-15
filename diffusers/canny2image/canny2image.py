@@ -3,7 +3,7 @@ os.makedirs('results', exist_ok=True)
 
 import glob
 import torch
-from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, EulerAncestralDiscreteScheduler, AutoencoderKL
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, AutoencoderKL
 from diffusers.utils import load_image
 
 import argparse
@@ -65,6 +65,12 @@ parser.add_argument(
     type=str,
     help='prompt'
 )
+parser.add_argument(
+    '--scheduler',
+    type=str,
+    default='pndm',
+    choices=['pndm', 'multistepdpm', 'eulera']
+)
 args = parser.parse_args()
 
 seed = args.seed
@@ -104,7 +110,21 @@ pipe = StableDiffusionControlNetPipeline.from_pretrained(
     vae=vae,
     safety_checker=None,
     torch_dtype=torch.float16).to('cuda')
-pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+
+scheduler = args.scheduler
+match scheduler:
+    case 'pmdn':
+        from diffusers import  PNDMScheduler
+        pipe.scheduler = PNDMScheduler.from_config(pipe.scheduler.config)
+    case 'multistepdpm':
+        from diffusers import DPMSolverMultistepScheduler
+        pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+    case 'eulera':
+        from diffusers import EulerAncestralDiscreteScheduler
+        pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
+    case _:
+        None
+
 pipe.enable_xformers_memory_efficient_attention()
 
 if args.prompt is not None and os.path.isfile(args.prompt):
