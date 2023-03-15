@@ -7,8 +7,12 @@ from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, EulerA
 from diffusers.utils import load_image
 
 import argparse
-
 parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--controlnet',
+    type=str,
+    default='controlnet/sd-controlnet-canny'
+)
 parser.add_argument(
     '--model',
     type=str,
@@ -68,6 +72,7 @@ steps = args.steps
 scale_list = args.scale
 
 vae_folder =args.vae
+control_model_id = args.controlnet
 base_model_id = args.model
 
 n_sample = args.n_samples
@@ -91,7 +96,7 @@ if vae_folder is not None:
 else:
     vae = AutoencoderKL.from_pretrained(base_model_id, subfolder='vae').to('cuda')
 
-controlnet = ControlNetModel.from_pretrained("controlnet/sd-controlnet-canny")
+controlnet = ControlNetModel.from_pretrained(control_model_id)
 
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     base_model_id,
