@@ -13,6 +13,10 @@ pip install xformers==0.0.17.dev466
 ~~~
 pip install controlnet_hinter
 ~~~
+or
+~~~
+pip install controlnet-aux
+~~~
 
 ## How to use canny2image.py
 
