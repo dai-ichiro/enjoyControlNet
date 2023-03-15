@@ -92,17 +92,18 @@ else:
         n_sample = 1
 
 if vae_folder is not None:
-    vae = AutoencoderKL.from_pretrained(vae_folder).to('cuda')
+    vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
 else:
-    vae = AutoencoderKL.from_pretrained(base_model_id, subfolder='vae').to('cuda')
+    vae = AutoencoderKL.from_pretrained(base_model_id, subfolder='vae', torch_dtype=torch.float16).to('cuda')
 
-controlnet = ControlNetModel.from_pretrained(control_model_id)
+controlnet = ControlNetModel.from_pretrained(control_model_id, torch_dtype=torch.float16)
 
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     base_model_id,
     controlnet=controlnet,
     vae=vae,
-    safety_checker=None).to('cuda')
+    safety_checker=None,
+    torch_dtype=torch.float16).to('cuda')
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
 pipe.enable_xformers_memory_efficient_attention()
 
