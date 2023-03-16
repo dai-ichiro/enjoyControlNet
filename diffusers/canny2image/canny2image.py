@@ -81,12 +81,12 @@ vae_folder =args.vae
 control_model_id = args.controlnet
 base_model_id = args.model
 
-n_sample = args.n_samples
+n_samples = args.n_samples
 
 if args.from_canny:
     if os.path.isdir(args.image):
         controlhint_list = glob.glob(f'{args.image}/*.png')
-        n_sample = 1
+        n_samples = 1
     else:
         controlhint_list = [args.image]
 else:
@@ -95,7 +95,7 @@ else:
     else:
         from cv2_canny import canny_edge_detection
         controlhint_list = canny_edge_detection(args.image)
-        n_sample = 1
+        n_samples = 1
 
 if vae_folder is not None:
     vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
@@ -139,14 +139,14 @@ else:
 
 negative_prompt = 'monochrome, lowres, bad anatomy, worst quality, low quality'
 
-print(f'n_samples: {n_sample}')
+print(f'n_samples: {n_samples}')
 print(f'prompt: {prompt}')
 print(f'negative prompt: {negative_prompt}')
 
 for controlhint in controlhint_list:
     hint_fname = os.path.splitext(os.path.basename(controlhint))[0]
     hint_image = load_image(controlhint)
-    for i in range(n_sample):
+    for i in range(n_samples):
         seed_i = seed + i * 1000
         for scale in scale_list:
             generator = torch.manual_seed(seed_i)
