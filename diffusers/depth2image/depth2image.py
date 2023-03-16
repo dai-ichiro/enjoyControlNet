@@ -86,8 +86,9 @@ n_samples = args.n_samples
 if args.from_depth:
     controlhint = load_image(args.image)
 else:
-    #todo 
-    controlhint = load_image(args.image)
+    from depth import make_depth_image
+    controlhint_fname = make_depth_image(args.image)
+    controlhint = load_image(controlhint_fname)
 
 if vae_folder is not None:
     vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
