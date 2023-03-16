@@ -1,19 +1,29 @@
+import os
 from transformers import pipeline
 from diffusers.utils import load_image
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--image',
-    type=str,
-    required=True,
-    help='path to original image'
-)
-opt = parser.parse_args()
+def make_depth_image(image:str) -> str:
+    depth_estimator = pipeline('depth-estimation')
 
-depth_estimator = pipeline('depth-estimation')
+    image = load_image(image)
+    image = depth_estimator(image)['depth']
+    
+    os.makedirs('pose_results', exist_ok=True)
+    save_fname = os.path.join('pose_results', 'depth.png')
+    image.save(save_fname)
+    return save_fname
 
-image = load_image(opt.image)
-image = depth_estimator(image)['depth']
-image.save('depth.png')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser() 
+    parser.add_argument(
+        '--image',
+        type=str,
+        required=True,
+        help='path to original image'
+    )
+    args = parser.parse_args()
+
+    make_depth_image(args.image)
+
 
