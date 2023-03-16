@@ -1,57 +1,51 @@
+import os
 from controlnet_aux import HEDdetector
 import numpy as np
 from PIL import Image
 import argparse
-import os 
+from typing import List
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    '--threshold_list',
-    nargs='*',
-    default=[0.5],    
-    type=float,
-    help='threshold',
-)
-parser.add_argument(
-    '--image',
-    type=str,
-    required=True,
-    help='path to original image'
-)
-parser.add_argument(
-    '--resolution',
-    type=int,
-    help='resolution'
-)
-parser.add_argument(
-    '--all',
-    action='store_true',
-    help='if true, threshold from 0.1 to 0.9'
-)
-opt = parser.parse_args()
-
-resolution = opt.resolution
-
-if resolution is None:
-    image = Image.open(opt.image)
+def make_scribble_image(image:str, threshold_list:List[float]) -> List[str]:
+    
+    image = Image.open(image)
     resolution = image.height
-else:
-    image = Image.open(opt.image).resize((resolution, resolution))
+    hed = HEDdetector.from_pretrained('lllyasviel/ControlNet')
+    hed_array = np.array(hed(image, detect_resolution=resolution, image_resolution=resolution).convert('L'))
+    
+    os.makedirs('scribble_results', exist_ok=True)
+    return_list = []
+    for threshold in threshold_list:
+        bool_array = hed_array > (255 * threshold)
+        result_array = np.where(bool_array == False, 0, 255).astype(np.uint8)
+        save_fname = os.path.join('scribble_results', f'sketch{threshold:.1f}.png')
+        Image.fromarray(result_array, mode='L').save(save_fname)
+        return_list.append(save_fname)
+    return return_list
 
-hed = HEDdetector.from_pretrained('lllyasviel/ControlNet')
-hed_array = np.array(hed(image, detect_resolution=resolution, image_resolution=resolution).convert('L'))
+if __name__ == "__main__":
 
-if opt.all:
-    threshold_list = [x * 0.1 for x in range(1, 10)]
-else:
-    threshold_list = opt.threshold
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--threshold',
+        type=float,
+        help='threshold',
+    )
+    parser.add_argument(
+        '--image',
+        type=str,
+        required=True,
+        help='path to original image'
+    )
+    args = parser.parse_args()
 
-os.makedirs('scribble_results', exist_ok=True)
+    if args.threshold is None:
+        threshold_list = [x * 0.1 for x in range(1, 10)]
+    else:
+        threshold_list = [args.threshold]
 
-for threshold in threshold_list:
-    bool_array = hed_array > (255 * threshold)
-    result_array = np.where(bool_array == False, 0, 255).astype(np.uint8)
+    make_scribble_image(image=args.image, threshold_list=threshold_list)
 
-    pil = Image.fromarray(result_array, mode='L')
-    pil.save(os.path.join('scribble_results', f'sketch{threshold:.1f}.png'))
+
+
+    
 
