@@ -9,8 +9,8 @@ def make_depth_image(image:str) -> str:
     image = load_image(image)
     image = depth_estimator(image)['depth']
     
-    os.makedirs('pose_results', exist_ok=True)
-    save_fname = os.path.join('pose_results', 'depth.png')
+    os.makedirs('depth_results', exist_ok=True)
+    save_fname = os.path.join('depth_results', 'depth.png')
     image.save(save_fname)
     return save_fname
 
