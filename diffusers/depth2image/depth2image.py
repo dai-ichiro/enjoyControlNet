@@ -41,9 +41,9 @@ parser.add_argument(
     help='path to original image'
 )
 parser.add_argument(
-    '--from_scribble',
+    '--from_depth',
     action="store_true",
-    help='if true, use scribble image'
+    help='if true, use depth image'
 )
 parser.add_argument(
     '--steps',
@@ -56,31 +56,20 @@ parser.add_argument(
     type=str,
     help='vae'
 )
-parser.add_argument(
-    '--resolution',
-    type=int,
-    default=512,
-    help='resolution(need square image)'
-)
 args = parser.parse_args()
 
 seed = args.seed
 steps = args.steps
 scale_list = args.scale
 
-resolution = args.resolution
-
 vae_folder =args.vae
 base_model_id = args.model
 
 if args.from_scribble:
-    control = load_image(args.image).resize((resolution, resolution))
+    controlhint = load_image(args.image)
 else:
-    control = controlnet_hinter.hint_fake_scribble(
-        np.array(load_image(args.image)), 
-        width=resolution, height=resolution,
-        detect_resolution=resolution)
-    control.save(os.path.join('results', 'scribble.png'))
+    #todo 
+    controlhint = load_image(args.image)
 
 if vae_folder is not None:
     vae = AutoencoderKL.from_pretrained(vae_folder).to('cuda')
@@ -104,9 +93,7 @@ for i in range(args.n_samples):
         image = pipe(
             prompt="best quality, extremely detailed", 
             negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
-            image=control,
-            width = resolution,
-            height = resolution,
+            image=controlhint,
             num_inference_steps=steps, 
             generator=generator,
             guidance_scale = scale,
