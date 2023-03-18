@@ -144,18 +144,21 @@ print(f'n_samples: {n_samples}')
 print(f'prompt: {prompt}')
 print(f'negative prompt: {negative_prompt}')
 
-for i in range(n_samples):
-    seed_i = seed + i * 1000
-    for scale in scale_list:
-        generator = torch.manual_seed(seed_i)
-        image = pipe(
-            prompt="best quality, extremely detailed", 
-            negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
-            image=control,
-            num_inference_steps=steps, 
-            generator=generator,
-            guidance_scale = scale,
-            ).images[0]
+for controlhint in controlhint_list:
+    hint_fname = os.path.splitext(os.path.basename(controlhint))[0]
+    hint_image = load_image(controlhint)
+    for i in range(n_samples):
+        seed_i = seed + i * 1000
+        for scale in scale_list:
+            generator = torch.manual_seed(seed_i)
+            image = pipe(
+                prompt=prompt, 
+                negative_prompt=negative_prompt,
+                image=hint_image,
+                num_inference_steps=steps, 
+                generator=generator,
+                guidance_scale = scale,
+                ).images[0]
 
-        image.save(os.path.join('results', f'scale{scale}_seed{seed_i}.png'))
+            image.save(os.path.join('results', f'{hint_fname}_scale{scale}_seed{seed_i}.png'))
     
