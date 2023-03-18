@@ -8,14 +8,16 @@ pip install transformers accelerate safetensors opencv-python
 pip install xformers==0.0.17.dev466
 ~~~
 
-### option
+### option 1
 
 ~~~
-pip install controlnet_hinter
-~~~
-or
-~~~
 pip install controlnet-aux
+~~~
+
+### option 2
+
+~~~
+pip install rembg[gpu]
 ~~~
 
 ## How to use canny2image.py
