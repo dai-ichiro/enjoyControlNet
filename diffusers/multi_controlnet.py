@@ -62,11 +62,11 @@ args = parser.parse_args()
 model_id = args.model
 vae_folder =args.vae
 
-controlnet1 = args.controlnet1
-controlnet2 = args.controlnet2
+controlnet1 = args.net1
+controlnet2 = args.net2
 
-image1 = args.controlnet1_image
-image2 = args.controlnet2_image
+image1 = args.image1
+image2 = args.image2
 
 if vae_folder is not None:
     vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
