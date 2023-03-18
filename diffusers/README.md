@@ -40,10 +40,10 @@ https://touch-sp.hatenablog.com/entry/2023/02/23/181611
 python multi_controlnet.py ^
   --model model\anything-v4.0 ^
   --vae vae\any4_vae ^
-  --controlnet1 controlnet\sd-controlnet-canny ^
-  --controlnet1_image canny_image.png ^
-  --controlnet2 controlnet\sd-controlnet-openpose ^
-  --controlnet2_image pose_image.png
+  --net1 controlnet\sd-controlnet-canny ^
+  --image1 canny_image.png ^
+  --net2 controlnet\sd-controlnet-openpose ^
+  --image2 pose_image.png
 ~~~
 
 #### For more details (link to my blog)
