@@ -116,4 +116,4 @@ for i in range(args.n_samples):
         generator = torch.manual_seed(seed_i),
         num_inference_steps=30,
     ).images[0]
-    image.save(os.path.join('results', f".seed{seed_i}.png"))
+    image.save(os.path.join('results', f"seed{seed_i}.png"))
