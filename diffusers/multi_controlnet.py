@@ -17,28 +17,28 @@ parser.add_argument(
     help='vae'
 )
 parser.add_argument(
-    '--controlnet1',
+    '--net1',
     type=str,
     required=True,
-    help='controlnet1'
+    help='first controlnet'
 )
 parser.add_argument(
-    '--controlnet2',
+    '--net2',
     type=str,
     required=True,
-    help='controlnet2'
+    help='second controlnet'
 )
 parser.add_argument(
-    '--controlnet1_image',
+    '--image1',
     type=str,
     required=True,
-    help='image for controlnet1'
+    help='image for first controlnet'
 )
 parser.add_argument(
-    '--controlnet2_image',
+    '--image2',
     type=str,
     required=True,
-    help='image for controlnet2'
+    help='image for second controlnet'
 )
 parser.add_argument(
     '--seed',
