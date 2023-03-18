@@ -5,8 +5,13 @@ from PIL import Image
 import argparse
 from typing import List
 
-def make_scribble_image(image:str, threshold_list:List[float]) -> List[str]:
+def make_scribble_image(image:str, threshold:float=None) -> List[str]:
     
+    if threshold is None:
+        threshold_list = [x * 0.1 for x in range(1, 10)]
+    else:
+        threshold_list = [threshold]
+
     image = Image.open(image)
     resolution = image.height
     hed = HEDdetector.from_pretrained('lllyasviel/ControlNet')
@@ -38,12 +43,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.threshold is None:
-        threshold_list = [x * 0.1 for x in range(1, 10)]
-    else:
-        threshold_list = [args.threshold]
-
-    make_scribble_image(image=args.image, threshold_list=threshold_list)
+    make_scribble_image(image=args.image, threshold=args.threshold)
 
 
 
