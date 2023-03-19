@@ -17,28 +17,18 @@ parser.add_argument(
     help='vae'
 )
 parser.add_argument(
-    '--net1',
+    '--controlnet',
+    nargs='*',
     type=str,
     required=True,
-    help='first controlnet'
+    help='list of controlnets'
 )
 parser.add_argument(
-    '--net2',
+    '--image',
+    nargs='*',
     type=str,
     required=True,
-    help='second controlnet'
-)
-parser.add_argument(
-    '--image1',
-    type=str,
-    required=True,
-    help='image for first controlnet'
-)
-parser.add_argument(
-    '--image2',
-    type=str,
-    required=True,
-    help='image for second controlnet'
+    help='list of images'
 )
 parser.add_argument(
     '--seed',
@@ -62,27 +52,23 @@ args = parser.parse_args()
 model_id = args.model
 vae_folder =args.vae
 
-controlnet1 = args.net1
-controlnet2 = args.net2
-
-image1 = args.image1
-image2 = args.image2
+image_list = args.image
 
 if vae_folder is not None:
     vae = AutoencoderKL.from_pretrained(vae_folder, torch_dtype=torch.float16).to('cuda')
 else:
     vae = AutoencoderKL.from_pretrained(model_id, subfolder='vae', torch_dtype=torch.float16).to('cuda')
 
-controlnet_processor1 = ControlNetModel.from_pretrained(controlnet1, torch_dtype=torch.float16).to('cuda')
-controlnet_processor2 = ControlNetModel.from_pretrained(controlnet2, torch_dtype=torch.float16).to('cuda')
+controlnet_list = [ControlNetModel.from_pretrained(x, torch_dtype=torch.float16).to('cuda') for x in args.controlnet]
 
-control_image1 = load_image(image1)  # load_image always return RGB format image
-control_image2 = load_image(image2)  # refer to diffusers/src/diffusers/utils/testing_utils.py
+image_list = [load_image(x) for x in args.image]
+#control_image1 = load_image(image1)  # load_image always return RGB format image
+#control_image2 = load_image(image2)  # refer to diffusers/src/diffusers/utils/testing_utils.py
 
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     model_id,
     vae=vae,
-    controlnet=[controlnet_processor1, controlnet_processor2],
+    controlnet=controlnet_list,
     safety_checker=None,
     torch_dtype=torch.float16).to('cuda')
 pipe.scheduler = EulerAncestralDiscreteScheduler.from_config(pipe.scheduler.config)
@@ -112,7 +98,7 @@ for i in range(args.n_samples):
     image = pipe(
         prompt=prompt,
         negative_prompt=negative_prompt,
-        image = [control_image1, control_image2],
+        image = image_list,
         generator = torch.manual_seed(seed_i),
         num_inference_steps=30,
     ).images[0]
