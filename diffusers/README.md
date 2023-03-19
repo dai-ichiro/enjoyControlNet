@@ -38,12 +38,12 @@ https://touch-sp.hatenablog.com/entry/2023/02/23/181611
 
 ~~~
 python multi_controlnet.py ^
+  --controlnet controlnet\sd-controlnet-canny controlnet\sd-controlnet-scribble controlnet\sd-controlnet-scribble ^
+  --image canny.png scribble1.png scribble2.png ^
   --model model\anything-v4.0 ^
-  --vae vae\any4_vae ^
-  --net1 controlnet\sd-controlnet-canny ^
-  --image1 canny_image.png ^
-  --net2 controlnet\sd-controlnet-openpose ^
-  --image2 pose_image.png
+  --vae vae\anime2_vae ^
+  --prompt prompt.txt ^
+  --n_samples 20
 ~~~
 
 #### For more details (link to my blog)
